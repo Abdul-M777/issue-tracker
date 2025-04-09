@@ -8,7 +8,6 @@ import IssueActions from "./IssueActions";
 
 const IssuesPage = async () => {
   const issue = await prisma.issue.findMany();
-  await delay(2000);
 
   return (
     <div>
