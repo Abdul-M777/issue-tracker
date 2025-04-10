@@ -15,6 +15,7 @@ import {
   Text,
 } from "@radix-ui/themes";
 import { stat } from "fs";
+import Skeleton from "@/app/components/Skeleton";
 
 const NavBar = () => {
   return (
@@ -65,7 +66,7 @@ const AuthStatus = () => {
   const { status, data: session } = useSession();
 
   if (status === "loading") {
-    return null;
+    return <Skeleton width="3rem" />;
   }
 
   if (status === "unauthenticated") {
