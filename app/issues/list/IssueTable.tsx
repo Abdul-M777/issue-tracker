@@ -93,5 +93,6 @@ const columns: {
 ];
 
 export const columnNames = columns.map((column) => column.value);
+export type ColumnNames = (typeof columnNames)[number];
 
 export default IssueTable;

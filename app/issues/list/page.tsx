@@ -2,7 +2,7 @@ import Pagination from "@/app/components/Pagination";
 import prisma from "@/prisma/client";
 import { Status } from "@prisma/client";
 import IssueActions from "./IssueActions";
-import IssueTable, { IssueQuery, columnNames } from "./IssueTable";
+import IssueTable, { ColumnNames, IssueQuery, columnNames } from "./IssueTable";
 import { Flex } from "@radix-ui/themes";
 import { Metadata } from "next";
 
@@ -35,7 +35,7 @@ const IssuesPage = async ({ searchParams }: Props) => {
     ? (statusParam as Status)
     : undefined;
 
-  const orderBy = columnNames.includes(orderByParam as keyof typeof columnNames)
+  const orderBy = columnNames.includes(orderByParam as ColumnNames)
     ? { [orderByParam as keyof typeof columnNames]: "asc" }
     : undefined;
 
