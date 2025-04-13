@@ -1,50 +1,76 @@
+import Pagination from "@/app/components/Pagination";
 import prisma from "@/prisma/client";
-import { Table } from "@radix-ui/themes";
-
-import { Link, IssueStatusBadge } from "@/app/components";
+import { Status } from "@prisma/client";
 import IssueActions from "./IssueActions";
+import IssueTable, { IssueQuery, columnNames } from "./IssueTable";
+import { Flex } from "@radix-ui/themes";
+import { Metadata } from "next";
 
-const IssuesPage = async () => {
-  const issue = await prisma.issue.findMany();
+export const dynamic = "force-dynamic";
 
-  return (
-    <div>
-      <IssueActions />
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Issue</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="hidden md:table-cell">
-              Status
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="hidden md:table-cell">
-              Created
-            </Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {issue.map((issue) => (
-            <Table.Row key={issue.id}>
-              <Table.Cell>
-                <Link href={`/issues/${issue.id}`}>{issue.title}</Link>
-                <div className="block md:hidden">
-                  <IssueStatusBadge status={issue.status} />
-                </div>
-              </Table.Cell>
-              <Table.Cell className="hidden md:table-cell">
-                <IssueStatusBadge status={issue.status} />
-              </Table.Cell>
-              <Table.Cell className="hidden md:table-cell">
-                {issue.createdAt.toDateString()}
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Issue Tracker - Issue List",
+  description: "View all project issues",
 };
 
-export const dynamic = "force-dynamic"; // Force revalidation on every request
+interface Props {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+const IssuesPage = async ({ searchParams }: Props) => {
+  const params = await searchParams;
+
+  const statusParam = Array.isArray(params.status)
+    ? params.status[0]
+    : params.status;
+
+  const orderByParam = Array.isArray(params.orderBy)
+    ? params.orderBy[0]
+    : params.orderBy;
+
+  const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
+
+  const statuses = Object.values(Status);
+  const status = statuses.includes(statusParam as Status)
+    ? (statusParam as Status)
+    : undefined;
+
+  const orderBy = columnNames.includes(orderByParam as keyof typeof columnNames)
+    ? { [orderByParam as keyof typeof columnNames]: "asc" }
+    : undefined;
+
+  const page = parseInt(pageParam || "1", 10) || 1;
+  const pageSize = 10;
+
+  const where = { status };
+
+  const issues = await prisma.issue.findMany({
+    where,
+    orderBy,
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+  });
+
+  const issueCount = await prisma.issue.count({ where });
+
+  return (
+    <Flex direction="column" gap="3">
+      <IssueActions />
+      <IssueTable
+        searchParams={{
+          status: status ?? "",
+          orderBy: orderByParam ?? "",
+          page: page.toString(),
+        }}
+        issues={issues}
+      />
+      <Pagination
+        pageSize={pageSize}
+        currentPage={page}
+        itemCount={issueCount}
+      />
+    </Flex>
+  );
+};
 
 export default IssuesPage;
