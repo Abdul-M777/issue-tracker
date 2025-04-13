@@ -8,11 +8,6 @@ import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Issue Tracker - Issue List",
-  description: "View all project issues",
-};
-
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
@@ -71,6 +66,11 @@ const IssuesPage = async ({ searchParams }: Props) => {
       />
     </Flex>
   );
+};
+
+export const metadata: Metadata = {
+  title: "Issue Tracker - Issue List",
+  description: "View all project issues",
 };
 
 export default IssuesPage;
